@@ -78,7 +78,6 @@ client.on('message', message => {
   }
 });
 
-
 require('uWebSockets.js').App().ws('/*', {
   open: (ws) => {
       const id = uuidv4();
@@ -91,40 +90,39 @@ require('uWebSockets.js').App().ws('/*', {
   },
   message: (ws, incMsg, isBinary) => {
     let json = JSON.parse(decoder.write(Buffer.from(incMsg)));
+    if (!json) return
+    const guild = client.guilds.cache.find((guild) => guild.name === 'United')
+    
+    const getChannel = (name) => {
+      const channel = guild.channels.cache.find((c) => c.name.split('-')[0] === name?.toLowerCase())
+      return channel
+    }
+
     switch (json.action) {
+      case 'announce': {
+        getChannel(ws.name)?.send(json.data)
+      }
       case 'joined': {
+        if (!json.name && !json.level && !json.stamina) return
         ws.name = json.name;
         ws.level = json.level;
-        ws.hp = json.hp;
-        const guild = client.guilds.cache.find((guild) => guild.name === 'United')
-        const old = guild.channels.cache.find((c) => c.name === `${ws.name}-offline`.toLowerCase())
-        if (old) {
-          old.setName(`${json.name}-Lv.${json.level}-HP.${json.hp}%`).then((channel) => {
-          const obj = {action: 'channelReg', data: channel.id}
-          ws.send(JSON.stringify(obj))
-          channel.send(`${json.name} Reconnected to server!`)
-        })
-        } else {
-          guild.channels.create(`${json.name}-Lv.${json.level}-HP.${json.hp}%`).then((channel) => {
-          const obj = {action: 'channelReg', data: channel.id}
+        ws.stamina = json.stamina;
+        const old = getChannel(json.name)
+          old?.delete()
+          guild.channels.create(`${json.name}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
+          const obj = {action: 'channelReg'}
           ws.send(JSON.stringify(obj))
           channel.send(`${json.name} Connected to server!`)
         })
-        }
         break;
       }
       case 'updateChar': {
-        ws.name = json.name;
         ws.level = json.level;
-        ws.hp = json.hp;
+        ws.stamina = json.stamina;
         const updated = {action: 'updated'}
         ws.send(JSON.stringify(updated))
-        const guild = client.guilds.cache.find((guild) => guild.name === 'United')
-        const channel = guild.channels.cache.find((c) => c.id === json.id)
-        if (channel) {
-          channel.setName(`${json.name}-Lv.${json.level}-HP.${json.hp}%`)
-          channel.send('updated!')
-        }
+        const channel = getChannel(ws.name)
+        channel?.setName(`${ws.name}-Lv.${json.level}-ST.${Math.floor(json.stamina/60)}%`)
         break;
       }
       case 'leave': {
@@ -140,14 +138,13 @@ require('uWebSockets.js').App().ws('/*', {
   close: (ws, code, message) => {
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
     const channel = guild.channels.cache.find((c) => c.name.split('-')[0] === ws.name.toLowerCase())
-    console.log(guild.channels.cache, ws.name.toLowerCase(), "CHANNELS")
-    if (channel) {
-      channel.setName(`${ws.name}-offline`)
-      channel.send(`${ws.name} Disconnected from server!`)
-    }
     sockets.find((socket, index) => {
     if (socket && socket.id === ws.id) {
       sockets.splice(index, 1);
+        if (channel) {
+          channel.setName(`${ws.name}-offline`)
+          channel.send(`${ws.name} Disconnected from server!`)
+        }
     }
   });
   },
