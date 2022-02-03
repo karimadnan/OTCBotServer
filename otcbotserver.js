@@ -142,7 +142,7 @@ require('uWebSockets.js').App().ws('/*', {
 
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
-}).listen(9001, (listenSocket) => {
+}).listen(process.env.PORT || 9001, (listenSocket) => {
 
   if (listenSocket) {
     console.log('Listening to port 9001');
