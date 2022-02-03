@@ -7,6 +7,7 @@ const cooldowns = new Discord.Collection();
 const { v4: uuidv4 } = require('uuid');
 const { StringDecoder } = require('string_decoder');
 const decoder = new StringDecoder('utf8');
+const port = process.env.PORT || 9001
 
 //Discord Code
 for (const file of commandFiles) {
@@ -142,7 +143,7 @@ require('uWebSockets.js').App().ws('/*', {
 
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
-}).listen(process.env.PORT || 9001, (listenSocket) => {
+}).listen(port, (listenSocket) => {
 
   if (listenSocket) {
     console.log('Listening to port 9001');
