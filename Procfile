@@ -1,1 +1,1 @@
-worker:  node otcbotserver.js
+worker: QUEUE=* bundle exec rake resque:work
