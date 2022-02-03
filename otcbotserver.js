@@ -1,7 +1,6 @@
 const fs = require('fs');
 const { prefix, token } = require('./server/Discord/config.json');
 const { Discord, client } = require('./server/Discord');
-var bodyParser = require('body-parser');
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./server/Discord/commands').filter(file => file.endsWith('.js'));
 const cooldowns = new Discord.Collection();
@@ -85,7 +84,7 @@ require('uWebSockets.js').App().ws('/*', {
       console.log('connected')
       ws.subscribe('broadcast')
       sockets.push(ws)
-      const msg = {action: 'register', id}
+      const msg = {action: 'register', msg: 'Welcome to kimox OTC Bot server'}
       ws.send(JSON.stringify(msg))
   },
   message: (ws, incMsg, isBinary) => {
@@ -125,14 +124,6 @@ require('uWebSockets.js').App().ws('/*', {
         channel?.setName(`${ws.name}-Lv.${json.level}-ST.${Math.floor(json.stamina/60)}%`)
         break;
       }
-      case 'leave': {
-        sockets.find((socket, index) => {
-        if (socket && socket.id === ws.id) {
-          sockets.splice(index, 1);
-        }
-      });
-        break;
-      }
     }
   },
   close: (ws, code, message) => {
@@ -141,10 +132,8 @@ require('uWebSockets.js').App().ws('/*', {
     sockets.find((socket, index) => {
     if (socket && socket.id === ws.id) {
       sockets.splice(index, 1);
-        if (channel) {
-          channel.setName(`${ws.name}-offline`)
-          channel.send(`${ws.name} Disconnected from server!`)
-        }
+      channel?.setName(`${ws.name}-offline`)
+      channel?.send(`${ws.name} Disconnected from server!`)
     }
   });
   },
