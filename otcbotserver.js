@@ -141,10 +141,10 @@ require('uWebSockets.js').SSLApp().ws('/*', {
   },
   
 }).get('/*', (res, req) => {
-
+  console.log('getttttt')
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
-}).listen(host, port, (listenSocket) => {
+}).listen(port, (listenSocket) => {
 
   if (listenSocket) {
     console.log(`Listening to port ${port}`);
