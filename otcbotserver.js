@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const { StringDecoder } = require('string_decoder');
 const decoder = new StringDecoder('utf8');
 const port = process.env.PORT || 9001
+const host = '0.0.0.0'
 
 //Discord Code
 for (const file of commandFiles) {
@@ -143,7 +144,7 @@ require('uWebSockets.js').SSLApp().ws('/*', {
 
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
-}).listen(port, (listenSocket) => {
+}).listen(host, port, (listenSocket) => {
 
   if (listenSocket) {
     console.log(`Listening to port ${port}`);
