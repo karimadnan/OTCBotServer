@@ -144,7 +144,7 @@ require('uWebSockets.js').SSLApp().ws('/*', {
   console.log('getttttt')
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
-}).listen(port, (listenSocket) => {
+}).listen(host, port, (listenSocket) => {
 
   if (listenSocket) {
     console.log(`Listening to port ${port}`);
