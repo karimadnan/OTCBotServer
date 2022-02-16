@@ -78,7 +78,7 @@ client.on('message', message => {
   }
 });
 
-require('uWebSockets.js').App().ws('/*', {
+require('uWebSockets.js').SSLApp().ws('/*', {
   open: (ws) => {
       const id = uuidv4();
       ws.id = id;
