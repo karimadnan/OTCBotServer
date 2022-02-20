@@ -133,15 +133,14 @@ require('uWebSockets.js').App().ws('/*', {
     const channel = guild.channels.cache.find((c) => c.name.split('-')[0] === ws.name.toLowerCase())
     sockets.find((socket, index) => {
     if (socket && socket.id === ws.id) {
-      sockets.splice(index, 1);
+      sockets = sockets.filter((id) => id !== socket.id)
       channel?.setName(`${ws.name}-offline`)
-      channel?.send(`${ws.name} Disconnected from server!`)
+      channel?.send(`${ws.name} Connect closed!`)
     }
   });
   },
   
 }).get('/*', (res, req) => {
-  console.log('getttttt')
   res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
   
 }).listen(host, port, (listenSocket) => {
