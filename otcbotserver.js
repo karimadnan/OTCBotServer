@@ -93,11 +93,8 @@ require('uWebSockets.js').App().ws('/*', {
     let json = JSON.parse(decoder.write(Buffer.from(incMsg)));
     if (!json) return
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
-    
-    const getChannel = (name) => {
-      const channel = guild.channels.cache.find((c) => c.name.split('-')[0] === name?.toLowerCase())
-      return channel
-    }
+    const getChannel = (name) => 
+      guild.channels.cache.find((c) => c.name.split('-')[0] === name?.toLowerCase())
 
     switch (json.action) {
       case 'announce': {
@@ -131,12 +128,17 @@ require('uWebSockets.js').App().ws('/*', {
   },
   close: (ws, code, message) => {
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
-    const channel = guild.channels.cache.find((c) => c.name.split('-')[0] === ws.name.toLowerCase())
+    const getChannel = (name) => 
+      guild.channels.cache.find((c) => c.name.split('-')[0] === name?.toLowerCase())
+      
     sockets.find((socket, index) => {
     if (socket && socket.id === ws.id) {
       sockets = sockets.filter((id) => id !== socket.id)
-      channel?.setName(`${ws.name}-offline`)
-      channel?.send(`${ws.name} Connection closed!`)
+      const channel = getChannel(ws.name)
+      if (channel) {
+        channel.setName(`${ws.name}-offline`)
+        channel.send(`${ws.name} Connection closed!`)
+      }
     }
   });
   },
