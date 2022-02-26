@@ -136,7 +136,7 @@ require('uWebSockets.js').App().ws('/*', {
     if (socket && socket.id === ws.id) {
       sockets = sockets.filter((id) => id !== socket.id)
       channel?.setName(`${ws.name}-offline`)
-      channel?.send(`${ws.name} Connect closed!`)
+      channel?.send(`${ws.name} Connection closed!`)
     }
   });
   },
