@@ -121,7 +121,9 @@ require('uWebSockets.js').App().ws('/*', {
         const updated = {action: 'updated'}
         ws.send(JSON.stringify(updated))
         const channel = getChannel(ws.name)
-        channel?.setName(`${ws.name}-Lv.${json.level}-ST.${Math.floor(json.stamina/60)}%`)
+        if (channel) {
+          channel.setName(`${ws.name}-Lv.${json.level}-ST.${Math.floor(json.stamina/60)}%`)
+        }
         break;
       }
     }
