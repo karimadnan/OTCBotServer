@@ -105,12 +105,13 @@ require('uWebSockets.js').App().ws('/*', {
       }
       case 'joined': {
         if (!json.name && !json.level && !json.stamina) return
-        ws.name = json.name;
+        const charName = json.name.replace(/\s+/g, '')
+        ws.name = charName;
         ws.level = json.level;
         ws.stamina = json.stamina;
-        const old = getChannel(json.name)
+        const old = getChannel(charName)
           old?.delete()
-          guild.channels.create(`${json.name}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
+          guild.channels.create(`${charName}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
           const obj = {action: 'channelReg'}
           ws.send(JSON.stringify(obj))
           channel.send(`${json.name} Connected to server!`)
