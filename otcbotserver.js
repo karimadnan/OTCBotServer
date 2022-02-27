@@ -36,7 +36,7 @@ const updateOffline = () => {
           const minutesDifference = Math.floor(timeOfDC/1000/60);
           timeOfDC -= minutesDifference*1000*60
           
-          return `${char.name} level ${char.level} - ${hoursDifference}H:${minutesDifference}M\n`
+          return `${char.name} - level ${char.level} - ${hoursDifference}H:${minutesDifference}M\n`
         }) : 'No offline characters!'
         const embed = new Discord.MessageEmbed()
             .setTitle('Current offline characters:')
@@ -100,7 +100,7 @@ client.on('message', message => {
       if (message.channel.name === 'actions' || message.channel.name === 'admin') {
         timestamps.set(message.author.id, now);
         setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-        command.execute(message, args, sockets);
+        command.execute({ message, args, sockets, offlineChars });
       }
       else {
         timestamps.set(message.author.id, now);
@@ -182,13 +182,14 @@ require('uWebSockets.js').App().ws('/*', {
             }
           })
 
-      console.log('here')
       const old = getChannel(charName)
       if (!old) {
-          console.log('no old')
           guild.channels.create(`${charName}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
           channel.send(`${json.name} Connected to server!`)
-        })}
+        })} else {
+          console.log('test')
+          old.send(`${json.name} Reconnected to server`)
+        }
 
         const obj = {action: 'channelReg'}
         ws.send(JSON.stringify(obj))
@@ -219,7 +220,7 @@ require('uWebSockets.js').App().ws('/*', {
       filterSocket(ws.id, () => {
         const channel = getChannel(ws.name)
         if (channel) {
-          channel.delete()
+          channel.send(`${ws.name} disconnected from server!`)
           offlineChars.push({ name: ws.name, level: ws.level, time: Date.now()})
           updateOffline()
         }
