@@ -187,7 +187,6 @@ require('uWebSockets.js').App().ws('/*', {
           guild.channels.create(`${charName}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
           channel.send(`${json.name} Connected to server!`)
         })} else {
-          console.log('test')
           old.send(`${json.name} Reconnected to server`)
         }
 
