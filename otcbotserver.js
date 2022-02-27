@@ -20,12 +20,48 @@ for (const file of commandFiles) {
 }
 
 let sockets = [];
+let offlineChars = [];
 
+const updateOffline = () => {
+  const guild = client.guilds.cache.find((guild) => guild.name === 'United')
+  const offChannel = guild.channels.cache.find((c) => c.name === 'offline-chars')
+  if (offChannel) {
+    offChannel.messages.fetch({ limit: 100 }).then((messages) => {
+      offChannel.bulkDelete(messages).then(() => {
+        const charList = offlineChars.length ? offlineChars.map((char) => {
+          let timeOfDC = Date.now() - char.time
+
+          const hoursDifference = Math.floor(timeOfDC/1000/60/60);
+          timeOfDC -= hoursDifference*1000*60*60
+          const minutesDifference = Math.floor(timeOfDC/1000/60);
+          timeOfDC -= minutesDifference*1000*60
+          
+          return `${char.name} level ${char.level} - ${hoursDifference}H:${minutesDifference}M\n`
+        }) : 'No offline characters!'
+        const embed = new Discord.MessageEmbed()
+            .setTitle('Current offline characters:')
+            .setColor('#D82148')
+            .setThumbnail('https://www.ezodus.net/images/outfit_gen/animoutfit.php?id=268&addons=3&head=132&body=0&legs=78&feet=0&mount=0&direction=3')
+            .setDescription('Name - Hours since disconnection')
+            .addField("Characters:", charList)
+        offChannel.send(embed);
+        offChannel.send('@everyone List was updated!')
+      })
+    })
+  }
+}
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  updateOffline()
 });
 
 client.on('message', message => {
+  if (message.channel.name === 'offline-chars' && 
+      message.author.username.toLowerCase() !== 'united manger') {
+    message.delete()
+    .then(msg => msg.author.send(`You cannot type in (offline-chars) channel!`))
+    .catch(console.error);
+  }
 
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
@@ -88,6 +124,14 @@ const filterSocket = (id, callback) => {
   });
 }
 
+const filterOffline = (name, callback) => {
+  const isOffline = offlineChars.find((char) => char.name === name)
+  if (isOffline) {
+    offlineChars = offlineChars.filter((char) => char.name !== name)
+    callback()
+  }
+}
+
 require('uWebSockets.js').App().ws('/*', {
   open: (ws) => {
       const id = uuidv4();
@@ -102,8 +146,8 @@ require('uWebSockets.js').App().ws('/*', {
     let json = JSON.parse(decoder.write(Buffer.from(incMsg)));
     if (!json) return
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
-    const getChannel = (name) => 
-      guild.channels.cache.find((c) => c.name.split('-')[0] === name?.toLowerCase())
+    const getChannel = (name, full) => 
+      guild.channels.cache.find((c) => !full ? c.name.split('-')[0] === name?.toLowerCase() : c.name === name?.toLowerCase())
 
     switch (json.action) {
 
@@ -114,36 +158,37 @@ require('uWebSockets.js').App().ws('/*', {
       case 'joined': {
         if (!json.name && !json.level && !json.stamina) return
         const charName = json.name.replace(/\s+/g, '')
-        ws.name = charName;
-        ws.level = json.level;
-        ws.stamina = json.stamina;
 
         const isConnected = sockets.find((socket) => socket.char === charName)
-
         if (isConnected) {
           filterSocket(ws.id, () => {
             ws.send(JSON.stringify({ action: 'duplicate', msg: 'This character is already connected.' }))
             ws.close()
           })
+          return
         }
 
-        sockets.map((socket) => {
-          if (socket.id === ws.id) {
-            return { ...socket, char: charName }
-          }
+        filterOffline(charName, () => {
+          updateOffline()
         })
 
-        const old = getChannel(charName)
-        const offlineChannel = getChannel(`${charName}-offline`)
+        ws.name = charName;
+        ws.level = json.level;
+        ws.stamina = json.stamina;
 
-        if (!old) {
+        sockets = sockets.map((socket) => {
+            if (socket.id === ws.id) {
+              return { ...socket, char: charName }
+            }
+          })
+
+      console.log('here')
+      const old = getChannel(charName)
+      if (!old) {
+          console.log('no old')
           guild.channels.create(`${charName}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
           channel.send(`${json.name} Connected to server!`)
         })}
-
-        if (offlineChannel) {
-          channel.setName(`${charName}-Lv.${json.level}-ST.${Math.floor(json.stamina/60)}%`)
-        }
 
         const obj = {action: 'channelReg'}
         ws.send(JSON.stringify(obj))
@@ -174,8 +219,9 @@ require('uWebSockets.js').App().ws('/*', {
       filterSocket(ws.id, () => {
         const channel = getChannel(ws.name)
         if (channel) {
-          channel.setName(`${ws.name}-offline`)
-          channel.send(`${ws.name} Connection closed!`)
+          channel.delete()
+          offlineChars.push({ name: ws.name, level: ws.level, time: Date.now()})
+          updateOffline()
         }
       })
   },
