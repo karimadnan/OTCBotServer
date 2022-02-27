@@ -152,7 +152,13 @@ require('uWebSockets.js').App().ws('/*', {
     switch (json.action) {
 
       case 'announce': {
-        getChannel(ws.name)?.send(json.data)
+        const urgentAnnounces = /justified|dead/
+        let str = `${json.data}`
+        
+        if (json.data.match(urgentAnnounces)) {
+          str = `@everyone ${str}`
+        }
+        getChannel(ws.name)?.send(str)
       }
 
       case 'joined': {
