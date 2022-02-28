@@ -136,6 +136,7 @@ require('uWebSockets.js').App().ws('/*', {
   open: (ws) => {
       const id = uuidv4();
       ws.id = id;
+      ws.name = ''
       console.log('connected')
       ws.subscribe('broadcast')
       sockets.push(ws)
@@ -165,11 +166,7 @@ require('uWebSockets.js').App().ws('/*', {
         if (!json.name && !json.level && !json.stamina) return
         const charName = json.name.replace(/\s+/g, '')
 
-        const isConnected = sockets.find((socket) => {
-          if (socket.char) {
-            return socket.char === charName
-          }
-        })
+        const isConnected = sockets.find((socket) => socket.name === charName)
         if (isConnected) {
           filterSocket(ws.id, () => {
             ws.send(JSON.stringify({ action: 'duplicate', msg: 'This character is already connected.' }))
@@ -188,7 +185,7 @@ require('uWebSockets.js').App().ws('/*', {
 
         sockets = sockets.map((socket) => {
             if (socket.id === ws.id) {
-              return { ...socket, char: charName }
+              return { ...socket, name: charName }
             }
           })
 
