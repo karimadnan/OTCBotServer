@@ -165,7 +165,11 @@ require('uWebSockets.js').App().ws('/*', {
         if (!json.name && !json.level && !json.stamina) return
         const charName = json.name.replace(/\s+/g, '')
 
-        const isConnected = sockets.find((socket) => socket.char === charName)
+        const isConnected = sockets.find((socket) => {
+          if (socket.char) {
+            return socket.char === charName
+          }
+        })
         if (isConnected) {
           filterSocket(ws.id, () => {
             ws.send(JSON.stringify({ action: 'duplicate', msg: 'This character is already connected.' }))
