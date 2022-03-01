@@ -136,10 +136,9 @@ require('uWebSockets.js').App().ws('/*', {
   open: (ws) => {
       const id = uuidv4();
       ws.id = id;
-      ws.name = ''
       console.log('connected')
       ws.subscribe('broadcast')
-      sockets.push(ws)
+      sockets.push({...ws, name: ''})
       const msg = {action: 'register', msg: 'Welcome to kimox OTC Bot server'}
       ws.send(JSON.stringify(msg))
   },
@@ -166,7 +165,7 @@ require('uWebSockets.js').App().ws('/*', {
         if (!json.name && !json.level && !json.stamina) return
         const charName = json.name.replace(/\s+/g, '')
 
-        const isConnected = sockets.length ? sockets.find((socket) => socket.name === charName) : undefined
+        const isConnected = sockets.find((socket) => socket.name === charName)
         if (isConnected) {
           filterSocket(ws.id, () => {
             ws.send(JSON.stringify({ action: 'duplicate', msg: 'This character is already connected.' }))
