@@ -62,6 +62,20 @@ client.on('message', message => {
     .then(msg => msg.author.send(`You cannot type in (offline-chars) channel!`))
     .catch(console.error);
   }
+  
+  if (/[a-zA-Z+]-lv[0-9+]/gi.test(message.channel.name) && !message.author.bot){
+    const char = message.channel.name.split('-')[0].toLowerCase()
+    console.log(sockets, 'sockets')
+    const charSoc = sockets.find((soc) => {
+      if (soc && soc.name) {
+        return soc.ws.name.toLowerCase() === char
+      }
+    })
+    if (charSoc) {
+      const msgObj = {action: 'textChannel', msg: message.content}
+      charSoc.ws.send(JSON.stringify(msgObj))
+    }
+  }
 
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
@@ -113,6 +127,7 @@ client.on('message', message => {
 
     }
   }
+
 });
 
 const filterSocket = (id, callback) => {
@@ -138,7 +153,7 @@ require('uWebSockets.js').App().ws('/*', {
       ws.id = id;
       console.log('connected')
       ws.subscribe('broadcast')
-      sockets.push({...ws, name: ''})
+      sockets.push({ws, name: ''})
       const msg = {action: 'register', msg: 'Welcome to kimox OTC Bot server'}
       ws.send(JSON.stringify(msg))
   },
@@ -189,10 +204,10 @@ require('uWebSockets.js').App().ws('/*', {
         ws.stamina = json.stamina;
 
         sockets = sockets.map((socket) => {
-            if (socket.id === ws.id) {
-              return { ...socket, name: charName }
-            }
-          })
+          if (socket.ws.id === ws.id) {
+            return { ws, name: charName }
+          }
+        })
 
       const old = getChannel(charName)
       if (!old) {
