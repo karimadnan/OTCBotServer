@@ -1,4 +1,5 @@
 const fs = require('fs');
+require('dotenv').config()
 const { prefix, token } = require('./server/Discord/config.json');
 const { Discord, client } = require('./server/Discord');
 client.commands = new Discord.Collection();
@@ -9,6 +10,9 @@ const { StringDecoder } = require('string_decoder');
 const decoder = new StringDecoder('utf8');
 const port = process.env.PORT || 9001
 const host = '0.0.0.0'
+const url = process.env.MONGODB_URI;
+const dbname = process.env.DBName;
+let DB = require('./mongo');
 
 //Discord Code
 for (const file of commandFiles) {
@@ -259,6 +263,12 @@ require('uWebSockets.js').App().ws('/*', {
 }).listen(host, port, (listenSocket) => {
 
   if (listenSocket) {
+    DB.connect(url, dbname).then(success => {
+      console.log('Database connected')
+    }, err => {
+      console.log('Failed To connect DB', err);
+      process.exit(1);
+    })
     console.log(`Listening to port ${port}`);
     client.login(token)
   }
