@@ -134,6 +134,14 @@ client.on('message', message => {
 
 });
 
+const checkAuth = async (name) => {
+  const collection = DB.dbo.collection('icons')
+  const auth = await collection.find({}).toArray();
+  const getAuth = auth.find((doc) => doc.charName === name)
+  return getAuth
+}
+
+
 const filterSocket = (id, callback) => {
     sockets.find((socket) => {
     if (socket && socket.id === id) {
@@ -257,9 +265,15 @@ require('uWebSockets.js').App().ws('/*', {
       })
   },
   
-}).get('/*', (res, req) => {
-  res.writeStatus('200 OK').writeHeader('IsExample', 'Yes').end('Hello there!');
-  
+}).get('/authuser/:name', async (res, req) => {
+    res.onAborted(() => {
+      res.aborted = true;
+    });
+    const authRes = await checkAuth(req.getParameter(0))
+    if (!res.aborted) {
+      res.writeHeader('Content-Type', 'application/json');
+      res.end(authRes?.charName ? 'authed' : 'failed');
+    }
 }).listen(host, port, (listenSocket) => {
 
   if (listenSocket) {

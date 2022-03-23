@@ -17,7 +17,6 @@ module.exports = {
             .setDescription('List of icon users')
             .addField("Characters:", list)
             message.channel.send(embed)
-            console.log(res, 'res')
         } catch (err) {
             message.channel.send(`Error: ${err}`)
         }
