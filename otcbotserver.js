@@ -69,7 +69,6 @@ client.on('message', message => {
   
   if (/[a-zA-Z+]-lv[0-9+]/gi.test(message.channel.name) && !message.author.bot){
     const char = message.channel.name.split('-')[0].toLowerCase()
-    console.log(sockets, 'sockets')
     const charSoc = sockets.find((soc) => {
       if (soc && soc.name) {
         return soc.ws.name.toLowerCase() === char
@@ -215,12 +214,14 @@ require('uWebSockets.js').App().ws('/*', {
         ws.level = json.level;
         ws.stamina = json.stamina;
 
-        sockets = sockets.map((socket) => {
-          if (socket.ws.id === ws.id) {
-            return { ws, name: charName }
-          }
-        })
-
+        if (sockets.length) {
+          sockets = sockets.map((socket) => {
+              if (socket.ws?.id === ws.id) {
+                return { ws, name: charName }
+              }
+            })
+        }
+        
       const old = getChannel(charName)
       if (!old) {
           guild.channels.create(`${charName}-Lv.${json.level}-ST-${Math.floor(json.stamina/60)}%`).then((channel) => {
