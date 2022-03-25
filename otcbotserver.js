@@ -216,10 +216,12 @@ require('uWebSockets.js').App().ws('/*', {
 
         if (sockets.length) {
           sockets = sockets.map((socket) => {
-              if (socket.ws?.id === ws.id) {
+            if (socket.ws && ws.id) {
+              if (socket.ws.id === ws.id) {
                 return { ws, name: charName }
               }
-            })
+            }
+          })
         }
         
       const old = getChannel(charName)
