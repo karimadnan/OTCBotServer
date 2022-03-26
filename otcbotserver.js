@@ -170,7 +170,7 @@ require('uWebSockets.js').App().ws('/*', {
   },
   message: (ws, incMsg, isBinary) => {
     let json = JSON.parse(decoder.write(Buffer.from(incMsg)));
-    if (!json || !json.data || !json.action) return
+    if (!json) return
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
     const getChannel = (name, full) => 
       guild.channels.cache.find((c) => !full ? c.name.split('-')[0] === name?.toLowerCase() : c.name === name?.toLowerCase())
@@ -178,6 +178,7 @@ require('uWebSockets.js').App().ws('/*', {
     switch (json.action) {
 
       case 'announce': {
+        if (!json.data || !json.action) return
         const urgentAnnounces = /justified|dead/
         let str = `${json.data}`
         
