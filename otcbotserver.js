@@ -170,7 +170,7 @@ require('uWebSockets.js').App().ws('/*', {
   },
   message: (ws, incMsg, isBinary) => {
     let json = JSON.parse(decoder.write(Buffer.from(incMsg)));
-    if (!json) return
+    if (!json || !json.data || !json.action) return
     const guild = client.guilds.cache.find((guild) => guild.name === 'United')
     const getChannel = (name, full) => 
       guild.channels.cache.find((c) => !full ? c.name.split('-')[0] === name?.toLowerCase() : c.name === name?.toLowerCase())
