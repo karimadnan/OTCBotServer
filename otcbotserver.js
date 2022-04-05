@@ -70,13 +70,13 @@ client.on('message', message => {
   if (/[a-zA-Z+]-lv[0-9+]/gi.test(message.channel.name) && !message.author.bot){
     const char = message.channel.name.split('-')[0].toLowerCase()
     const charSoc = sockets.find((soc) => {
-      if (soc && soc.name) {
+      if (soc && soc.ws?.name) {
         return soc.ws.name.toLowerCase() === char
       }
     })
-    if (charSoc) {
+    if (charSoc && charSoc.ws) {
       const msgObj = {action: 'textChannel', msg: message.content}
-      charSoc.ws.send(JSON.stringify(msgObj))
+      charSoc.ws?.send(JSON.stringify(msgObj))
     }
   }
 
