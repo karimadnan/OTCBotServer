@@ -143,9 +143,9 @@ const checkAuth = async (name) => {
 
 const filterSocket = (id, callback) => {
     sockets.find((socket) => {
-    if (socket && socket.id === id) {
-      sockets = sockets.filter((prevSock) => prevSock.id !== id)
-      callback()
+    if (socket && socket.ws?.id === id) {
+      sockets = sockets.filter((prevSock) => prevSock.ws?.id !== id)
+      callback?.()
     }
   });
 }
@@ -199,12 +199,13 @@ require('uWebSockets.js').App().ws('/*', {
           return false
         })
 
+
         if (isConnected) {
-          filterSocket(ws.id, () => {
-            ws.send(JSON.stringify({ action: 'duplicate', msg: 'This character is already connected.' }))
-            ws.close()
+          filterSocket(isConnected.ws?.id, () => {
+            isConnected.ws.close()
+            const msg = {action: 'textChannel', msg: `Old socket removed, welcome back ${json.name}`}
+            ws.send(JSON.stringify(msg))
           })
-          return
         }
 
         filterOffline(charName, () => {
@@ -218,7 +219,7 @@ require('uWebSockets.js').App().ws('/*', {
         if (sockets.length) {
           sockets = sockets.map((socket) => {
             if (socket.ws && ws.id) {
-              if (socket.ws.id === ws.id) {
+              if (socket.ws?.id === ws.id) {
                 return { ws, name: charName }
               }
             }
