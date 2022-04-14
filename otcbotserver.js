@@ -144,7 +144,7 @@ const checkAuth = async (name) => {
 const filterSocket = (id, callback) => {
     sockets.find((socket) => {
     if (socket && socket.ws?.id === id) {
-      sockets = sockets.filter((prevSock) => prevSock.ws?.id !== id)
+      sockets = sockets.filter((prevSock) => prevSock.ws && prevSock.ws?.id !== id)
       callback?.()
     }
   });
